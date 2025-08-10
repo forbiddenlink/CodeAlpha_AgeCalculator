@@ -37,11 +37,8 @@ class AgeCalculatorApp {
       });
     });
 
-    // Theme toggle - using existing theme toggle
-    const themeToggle = document.getElementById('theme-toggle');
-    if (themeToggle) {
-      themeToggle.addEventListener('click', () => this.themeManager.toggleTheme());
-    }
+    // Theme toggle is handled by ThemeManager itself
+    // No need to add duplicate event listener here
 
     // Input method specific handlers
     this.setupBirthdateInput();
@@ -514,10 +511,13 @@ Calculated with Elizabeth Stein's Age Calculator ✨`;
 }
 
 // Initialize the application when DOM is loaded
+// Global app instance
 let ageCalculatorApp;
 
 document.addEventListener('DOMContentLoaded', () => {
   ageCalculatorApp = new AgeCalculatorApp();
+  // Make globally accessible for debugging
+  window.ageCalculatorApp = ageCalculatorApp;
 });
 
 // Global functions for HTML onclick handlers
