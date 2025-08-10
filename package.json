@@ -8,7 +8,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite --port 4567 --open",
-    "build": "vite build",
+    "build": "node build.js",
+    "build:vite": "vite build",
     "build:production": "vite build --config vite.config.production.js",
     "build:dev": "vite build",
     "preview": "vite preview --port 4567 --open",
