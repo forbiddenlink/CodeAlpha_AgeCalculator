@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Age Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+    <meta name="color-scheme" content="light dark">
+</head>
+<body>
+    <main class="glass" role="main" aria-label="Age Calculator">
+        <button id="theme-toggle" aria-label="Toggle dark mode" style="position:absolute;top:1.2rem;right:1.2rem;background:transparent;border:none;cursor:pointer;font-size:1.5rem;z-index:2;">
+            <span id="theme-icon" aria-hidden="true">🌙</span>
+        </button>
+        <h1>Age Calculator</h1>
+        <p style="text-align:center;color:var(--text-light);font-size:1.08rem;margin-top:-1.1rem;margin-bottom:2.1rem;">A modern, accessible tool to calculate your age and more.</p>
+        <div class="toggle-group" style="text-align:center; margin-bottom:1.2rem;">
+            <button class="toggle-btn active" onclick="switchInputMethod('manual')">Manual</button>
+            <button class="toggle-btn" onclick="switchInputMethod('picker')">Date Picker</button>
+        </div>
+        <form id="age-form" autocomplete="off" novalidate>
+            <div id="manual-input" class="input-method active">
+                <!-- Locale dropdown will be injected here by JS -->
+                <label for="manual-date">Enter your birth date</label>
+                <input id="manual-date" name="manual-date" type="text" placeholder="MM/DD/YYYY" aria-describedby="date-format-hint" inputmode="numeric" autocorrect="off" spellcheck="false" required>
+                <div id="date-format-hint"></div>
+            </div>
+            <div id="picker-input" class="input-method">
+                <label for="picker-date">Pick your birth date</label>
+                <input id="picker-date" name="picker-date" type="date" required>
+            </div>
+            <button type="submit" id="calc-btn">Calculate Age</button>
+        </form>
+        <div id="results" class="results" aria-live="polite" style="display:none;"></div>
+        <div id="error-message" class="error-message" aria-live="assertive" style="display:none;"></div>
+        <div class="spacer"></div>
+        <footer style="text-align:center;color:var(--text-light);font-size:0.98rem;margin-top:2.5rem;opacity:0.85;">
+            &copy; 2025 Age Calculator &mdash; <span style="font-weight:500;">Modern UI by GitHub Copilot</span>
+        </footer>
+    </main>
+    <script type="module" src="script.js"></script>
+</body>
+</html>
+                    <polyline points="12,6 12,12 16,14"/>
+                </svg>
+                Date Picker
+            </button>
+        </div>
+
+        <div class="input-group" role="group" aria-labelledby="input-method-label">
+            <div class="input-method active" id="manual-input">
+                <div class="input-row">
+                    <div class="input-field">
+                        <label for="day">Day</label>
+                        <input type="number" id="day" min="1" max="31" placeholder="DD" title="Enter day (1-31)" aria-label="Day" inputmode="numeric" autocomplete="bday-day">
+                    </div>
+                    <div class="input-field">
+                        <label for="month">Month</label>
+                        <input type="number" id="month" min="1" max="12" placeholder="MM" title="Enter month (1-12)" aria-label="Month" inputmode="numeric" autocomplete="bday-month">
+                    </div>
+                    <div class="input-field">
+                        <label for="year">Year</label>
+                        <input type="number" id="year" min="1900" max="2025" placeholder="YYYY" title="Enter year (1900-2025)" aria-label="Year" inputmode="numeric" autocomplete="bday-year">
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-method" id="picker-input">
+                <div class="input-field full-width">
+                    <label for="birthdate">Date of Birth</label>
+                    <input type="date" id="birthdate" max="2025-12-31" title="Select your birth date" aria-label="Date of Birth" autocomplete="bday">
+                </div>
+            </div>
+        </div>
+
+        <div class="error" id="error-message" aria-live="assertive" role="alert" tabindex="-1" style="outline: none;"></div>
+
+        <button class="calculate-btn" onclick="calculateAge()" title="Calculate your age" aria-label="Calculate your age">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+            Calculate My Age
+        </button>
+
+        <div class="progress-container" id="progress-container" style="display: none;" aria-live="polite" aria-label="Calculation progress">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-text" id="progress-text">Calculating...</div>
+        </div>
+
+        <div class="results" id="results" aria-live="polite" role="region" tabindex="-1">
+            <div class="age-display">
+                <div class="age-unit">
+                    <span class="age-number" id="years">0</span>
+                    <div class="age-label">Years</div>
+                </div>
+                <div class="age-unit">
+                    <span class="age-number" id="months">0</span>
+                    <div class="age-label">Months</div>
+                </div>
+                <div class="age-unit">
+                    <span class="age-number" id="days">0</span>
+                    <div class="age-label">Days</div>
+                </div>
+            </div>
+    
+            <div class="share-section">
+                <button class="share-btn" onclick="shareResults()" title="Share your age" aria-label="Share your age">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                        <polyline points="16,6 12,2 8,6"/>
+                        <line x1="12" y1="2" x2="12" y2="15"/>
+                    </svg>
+                    Share My Age
+                </button>
+            </div>
+    
+            <div class="stats-grid" id="stats-grid">
+                <!-- Stats will be populated by JavaScript -->
+            </div>
+    
+            <div class="fun-facts" id="fun-facts">
+                <!-- Fun facts will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
