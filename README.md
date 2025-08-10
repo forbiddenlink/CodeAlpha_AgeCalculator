@@ -2,7 +2,9 @@
 
 A modern, accessible, and feature-rich age calculator built with vanilla JavaScript. Calculate your exact age with beautiful visualizations, statistics, fun facts, and more!
 
-![Age Calculator Screenshot](https://via.placeholder.com/800x400/6366f1/ffffff?text=Age+Calculator+Pro)
+![Age Calculator Screenshot](./screenshots/Screenshot.png)
+
+*Modern glassmorphism design with beautiful gradients and smooth animations*
 
 ## ✨ Features
 
@@ -34,9 +36,33 @@ A modern, accessible, and feature-rich age calculator built with vanilla JavaScr
 - **🧪 Tested**: Comprehensive test suite with 100% pass rate
 - **🏗️ Modern Stack**: ES6+ modules, Vite, Vitest
 
+## 📸 Screenshots
+
+### Main Interface
+
+![Age Calculator Main Interface](./screenshots/Screenshot.png)
+
+The main interface showcases our modern glassmorphism design with:
+
+- **Clean Layout**: Intuitive form design with proper spacing
+- **Beautiful Gradients**: Purple gradient background with glass cards
+- **Theme Toggle**: Easy dark/light mode switching in top-right
+- **Dual Input Methods**: Toggle between Manual Entry and Date Picker
+- **Responsive Design**: Optimized for all screen sizes
+- **Results Display**: Clean age display with years, months, and days
+
+### Key Visual Features
+
+- ✨ **Glassmorphism Cards**: Translucent cards with backdrop blur
+- 🎨 **Modern Color Scheme**: Purple/blue gradient with high contrast text
+- 🌙 **Theme Support**: Beautiful dark mode (shown) and light mode
+- ⚡ **Smooth Animations**: Subtle hover effects and transitions
+- 📱 **Mobile First**: Responsive design that works everywhere
+
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 18+ and npm 9+
 - Modern browser with ES6+ support
 
