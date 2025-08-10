@@ -105,6 +105,17 @@ export default class AgeCalculator {
     return planetaryAges;
   }
 
+  // Alias for backward compatibility with tests
+  getPlanetaryAges() {
+    const planetaryAges = this.calculatePlanetaryAges();
+    // Convert to array format expected by tests
+    return Object.entries(planetaryAges).map(([key, data]) => ({
+      planet: data.name,
+      age: parseFloat(data.years),
+      key
+    }));
+  }
+
   // Calculate next milestones
   getNextMilestones() {
     const currentAge = this.calculate();

@@ -2,6 +2,10 @@
 import AgeCalculator from './AgeCalculator.js';
 import UIManager from './UIManager.js';
 import ThemeManager from './ThemeManager.js';
+import { ErrorHandler } from './ErrorHandler.js';
+import { ValidationHelper } from './ValidationHelper.js';
+import { performanceMonitor } from './PerformanceMonitor.js';
+import { userPreferences } from './UserPreferences.js';
 
 class AgeCalculatorApp {
   constructor() {
@@ -13,12 +17,190 @@ class AgeCalculatorApp {
   }
 
   initializeApp() {
-    // Theme is already initialized in constructor
+    // Wrap initialization in error boundary
+    const safeInit = ErrorHandler.createBoundaryWrapper(
+      this._initializeApp.bind(this), 
+      'App Initialization'
+    );
+    safeInit();
+  }
+
+  _initializeApp() {
+    // Apply user preferences
+    userPreferences.applyPreferences();
+    
+    // Setup event listeners
     this.setupEventListeners();
     this.initializeTabs();
     this.setupKeyboardShortcuts();
     this.setupExportFunctionality();
     this.focusFirstInput();
+    
+    // Setup enhanced validation
+    this.setupEnhancedValidation();
+    
+    // Listen for preference changes
+    window.addEventListener('preferencesChanged', (e) => {
+      this.onPreferencesChanged(e.detail);
+    });
+  }
+
+  setupEnhancedValidation() {
+    // Real-time validation for manual inputs
+    const dayInput = document.getElementById('day');
+    const monthInput = document.getElementById('month');
+    const yearInput = document.getElementById('year');
+
+    if (dayInput) {
+      const dayValidator = ValidationHelper.createValidator('day');
+      dayInput.addEventListener('input', (e) => {
+        const result = dayValidator(e.target.value);
+        this.showFieldValidation(e.target, result);
+      });
+    }
+
+    if (monthInput) {
+      const monthValidator = ValidationHelper.createValidator('month');
+      monthInput.addEventListener('input', (e) => {
+        const result = monthValidator(e.target.value);
+        this.showFieldValidation(e.target, result);
+      });
+    }
+
+    if (yearInput) {
+      const yearValidator = ValidationHelper.createValidator('year');
+      yearInput.addEventListener('input', (e) => {
+        const result = yearValidator(e.target.value);
+        this.showFieldValidation(e.target, result);
+      });
+    }
+
+    // Date picker validation
+    const birthdateInput = document.getElementById('birthdate');
+    if (birthdateInput) {
+      birthdateInput.addEventListener('input', (e) => {
+        const errors = ValidationHelper.validateDateString(e.target.value);
+        const result = { 
+          valid: errors.length === 0, 
+          message: errors.join(', ') 
+        };
+        this.showFieldValidation(e.target, result);
+      });
+    }
+  }
+
+  showFieldValidation(field, result) {
+    // Remove existing validation styling
+    field.classList.remove('field-error', 'field-success');
+    
+    // Remove existing validation message
+    const existingMessage = field.parentNode.querySelector('.validation-message');
+    if (existingMessage) {
+      existingMessage.remove();
+    }
+
+    if (!field.value) {
+      return; // Don't show validation for empty fields
+    }
+
+    if (result.valid) {
+      field.classList.add('field-success');
+    } else {
+      field.classList.add('field-error');
+      
+      if (result.message) {
+        const message = document.createElement('div');
+        message.className = 'validation-message';
+        message.textContent = result.message;
+        message.style.cssText = `
+          color: #ef4444;
+          font-size: 12px;
+          margin-top: 4px;
+          font-weight: 500;
+        `;
+        field.parentNode.appendChild(message);
+      }
+    }
+  }
+
+  onPreferencesChanged(preferences) {
+    // Handle auto-calculate preference
+    if (preferences.autoCalculate) {
+      this.setupAutoCalculation();
+    } else {
+      this.removeAutoCalculation();
+    }
+    
+    // Handle input method preference
+    this.switchInputMethod(preferences.inputMethod);
+    
+    // Handle animation preferences
+    if (!preferences.showAnimations) {
+      document.documentElement.style.setProperty('--transition-fast', '0ms');
+      document.documentElement.style.setProperty('--transition', '0ms');
+      document.documentElement.style.setProperty('--transition-slow', '0ms');
+    } else {
+      document.documentElement.style.removeProperty('--transition-fast');
+      document.documentElement.style.removeProperty('--transition');
+      document.documentElement.style.removeProperty('--transition-slow');
+    }
+  }
+
+  setupAutoCalculation() {
+    const inputs = document.querySelectorAll('#day, #month, #year, #birthdate');
+    inputs.forEach(input => {
+      input.addEventListener('input', this.debounce(this.tryAutoCalculate.bind(this), 1000));
+    });
+  }
+
+  removeAutoCalculation() {
+    const inputs = document.querySelectorAll('#day, #month, #year, #birthdate');
+    inputs.forEach(input => {
+      input.removeEventListener('input', this.tryAutoCalculate);
+    });
+  }
+
+  tryAutoCalculate() {
+    const manualInput = document.getElementById('manual-input');
+    const isManualActive = manualInput && manualInput.classList.contains('active');
+    
+    try {
+      if (isManualActive) {
+        const day = parseInt(document.getElementById('day').value);
+        const month = parseInt(document.getElementById('month').value);
+        const year = parseInt(document.getElementById('year').value);
+        
+        if (day && month && year) {
+          const errors = ValidationHelper.validateDateRange(day, month, year);
+          if (errors.length === 0) {
+            this.handleFormSubmit(new Event('submit'));
+          }
+        }
+      } else {
+        const birthdateValue = document.getElementById('birthdate').value;
+        if (birthdateValue) {
+          const errors = ValidationHelper.validateDateString(birthdateValue);
+          if (errors.length === 0) {
+            this.handleFormSubmit(new Event('submit'));
+          }
+        }
+      }
+    } catch (error) {
+      // Silently fail for auto-calculation
+      console.debug('Auto-calculation failed:', error);
+    }
+  }
+
+  debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
   }
 
   setupEventListeners() {
@@ -224,79 +406,106 @@ class AgeCalculatorApp {
     e.preventDefault();
     this.uiManager.hideError();
 
-    try {
-      let birthDate;
-      
-      // Check which input method is active
-      const manualInput = document.getElementById('manual-input');
-      const isManualActive = manualInput && manualInput.classList.contains('active');
-      
-      if (isManualActive) {
-        // Manual input method
-        const day = parseInt(document.getElementById('day').value) || 0;
-        const month = parseInt(document.getElementById('month').value) || 0;
-        const year = parseInt(document.getElementById('year').value) || 0;
-        
-        if (!day || !month || !year) {
-          throw new Error('Please fill in all date fields.');
-        }
-        
-        birthDate = new Date(year, month - 1, day); // month is 0-indexed
-      } else {
-        // Date picker method
-        const birthdateValue = document.getElementById('birthdate').value;
-        if (!birthdateValue) {
-          throw new Error('Please enter your birth date.');
-        }
-        birthDate = new Date(birthdateValue);
-      }
+    // Wrap calculation in error boundary and performance monitoring
+    const safeCalculate = ErrorHandler.createBoundaryWrapper(
+      this._performCalculation.bind(this),
+      'Age Calculation'
+    );
 
-      // Show loading state
-      this.showLoadingState();
+    await safeCalculate();
+  }
 
-      // Calculate age with a slight delay for loading effect
-      await new Promise(resolve => setTimeout(resolve, 500));
+  async _performCalculation() {
+    let birthDate;
+    
+    // Check which input method is active
+    const manualInput = document.getElementById('manual-input');
+    const isManualActive = manualInput && manualInput.classList.contains('active');
+    
+    if (isManualActive) {
+      // Manual input method with enhanced validation
+      const day = parseInt(document.getElementById('day').value) || 0;
+      const month = parseInt(document.getElementById('month').value) || 0;
+      const year = parseInt(document.getElementById('year').value) || 0;
       
-      // Create a new AgeCalculator instance with the birth date
-      let day, month, year;
-      
-      if (isManualActive) {
-        day = parseInt(document.getElementById('day').value);
-        month = parseInt(document.getElementById('month').value);
-        year = parseInt(document.getElementById('year').value);
-      } else {
-        day = birthDate.getDate();
-        month = birthDate.getMonth() + 1; // Convert from 0-indexed to 1-indexed
-        year = birthDate.getFullYear();
+      if (!day || !month || !year) {
+        throw new Error('Please fill in all date fields.');
       }
       
-      this.ageCalculator = new AgeCalculator(day, month, year);
-      const result = this.ageCalculator.calculate();
+      // Validate using enhanced validation
+      const validationErrors = ValidationHelper.validateDateRange(day, month, year);
+      if (validationErrors.length > 0) {
+        throw new Error(validationErrors[0]);
+      }
       
-      // Generate enhanced content using the calculator's methods
-      const stats = this.ageCalculator.getStats();
-      const funFacts = this.ageCalculator.getFunFacts();
+      birthDate = new Date(year, month - 1, day); // month is 0-indexed
+    } else {
+      // Date picker method
+      const birthdateValue = document.getElementById('birthdate').value;
+      if (!birthdateValue) {
+        throw new Error('Please enter your birth date.');
+      }
       
-      // Display results with all new features
-      this.uiManager.displayResults(
-        result.years, 
-        result.months, 
-        result.days, 
-        stats, 
-        funFacts,
-        this.ageCalculator
-      );
+      const validationErrors = ValidationHelper.validateDateString(birthdateValue);
+      if (validationErrors.length > 0) {
+        throw new Error(validationErrors[0]);
+      }
+      
+      birthDate = new Date(birthdateValue);
+    }
 
-      this.hideLoadingState();
+    // Show loading state
+    this.showLoadingState();
+
+    // Calculate age with performance monitoring and slight delay for loading effect
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Create a new AgeCalculator instance with the birth date
+    let day, month, year;
+    
+    if (isManualActive) {
+      day = parseInt(document.getElementById('day').value);
+      month = parseInt(document.getElementById('month').value);
+      year = parseInt(document.getElementById('year').value);
+    } else {
+      day = birthDate.getDate();
+      month = birthDate.getMonth() + 1; // Convert from 0-indexed to 1-indexed
+      year = birthDate.getFullYear();
+    }
+    
+    this.ageCalculator = new AgeCalculator(day, month, year);
+    
+    // Wrap calculation in performance monitoring
+    const timedCalculate = performanceMonitor.timeCalculation(
+      this.ageCalculator.calculate.bind(this.ageCalculator)
+    );
+    const result = timedCalculate();
+    
+    // Generate enhanced content using the calculator's methods
+    const stats = this.ageCalculator.getStats();
+    const funFacts = this.ageCalculator.getFunFacts();
+    
+    // Display results with all new features (check user preferences)
+    const preferences = userPreferences.preferences;
+    this.uiManager.displayResults(
+      result.years, 
+      result.months, 
+      result.days, 
+      preferences.showStatistics ? stats : [],
+      preferences.showFunFacts ? funFacts : [],
+      this.ageCalculator,
+      preferences
+    );
+
+    this.hideLoadingState();
+    
+    if (preferences.showNotifications) {
       this.showNotification('Age calculated successfully! 🎉');
-      
-      // Announce to screen readers
+    }
+    
+    // Announce to screen readers if accessibility is enabled
+    if (preferences.accessibility.announceResults) {
       this.announceResults(result);
-      
-    } catch (error) {
-      this.hideLoadingState();
-      this.uiManager.showError(error.message);
-      this.showNotification(error.message, 'error');
     }
   }
 
@@ -433,12 +642,23 @@ class AgeCalculatorApp {
   }
 
   clearForm() {
-    // Clear all inputs
-    document.getElementById('age-form').reset();
+    // Clear all inputs manually since we don't have a form element
+    const inputs = ['day', 'month', 'year', 'birthdate'];
+    inputs.forEach(id => {
+      const input = document.getElementById(id);
+      if (input) {
+        input.value = '';
+        // Remove validation classes
+        input.classList.remove('field-error', 'field-success');
+      }
+    });
     
     // Hide results and errors
     this.uiManager.hideError();
-    document.getElementById('results').classList.remove('show');
+    const resultsElement = document.getElementById('results');
+    if (resultsElement) {
+      resultsElement.classList.remove('show');
+    }
     
     // Focus first input
     this.focusFirstInput();
