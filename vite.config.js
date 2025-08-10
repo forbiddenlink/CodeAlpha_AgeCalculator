@@ -3,6 +3,11 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   root: '.',
+  server: {
+    port: 4567,
+    open: true,
+    host: true
+  },
   build: {
     outDir: 'dist',
     rollupOptions: {
@@ -10,8 +15,5 @@ export default defineConfig({
         manualChunks: undefined, // Let Vite handle chunking
       },
     },
-  },
-  server: {
-    open: true,
   },
 });

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Age Calculator - Calculate Your Age Precisely</title>
+    <meta name="description" content="Calculate your exact age in years, months, and days with our modern, accessible age calculator. Features include statistics, fun facts, and multiple input methods.">
+    <meta name="keywords" content="age calculator, birth date, calculate age, years months days">
+    <meta name="author" content="CodeAlpha">
+    <meta name="color-scheme" content="light dark">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎂</text></svg>">
+  <script type="module" crossorigin src="/assets/index-DLuKD3F7.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-Bx-oT7OW.css">
+</head>
+<body>
+    <main class="glass" role="main" aria-label="Age Calculator Application">
+        <!-- Theme Toggle -->
+        <button 
+            id="theme-toggle" 
+            class="theme-toggle" 
+            aria-label="Toggle between light and dark theme"
+            title="Switch theme"
+        >
+            <span id="theme-icon" aria-hidden="true">🌙</span>
+        </button>
+
+        <!-- Header Section -->
+        <header>
+            <h1>Age Calculator</h1>
+            <p class="subtitle">
+                Calculate your precise age with beautiful statistics and insights
+            </p>
+        </header>
+
+        <!-- Input Method Toggle -->
+        <div class="toggle-group" role="tablist" aria-label="Input method selection">
+            <button 
+                class="toggle-btn active" 
+                role="tab"
+                aria-selected="true"
+                aria-controls="manual-input"
+                onclick="switchInputMethod('manual')"
+                id="manual-tab"
+            >
+                Manual Entry
+            </button>
+            <button 
+                class="toggle-btn" 
+                role="tab"
+                aria-selected="false"
+                aria-controls="picker-input"
+                onclick="switchInputMethod('picker')"
+                id="picker-tab"
+            >
+                Date Picker
+            </button>
+        </div>
+
+        <!-- Input Section -->
+        <section class="input-section" aria-labelledby="input-section-title">
+            <h2 id="input-section-title" class="sr-only">Enter Your Birth Date</h2>
+            
+            <!-- Manual Input Method -->
+            <div 
+                class="input-method active" 
+                id="manual-input"
+                role="tabpanel"
+                aria-labelledby="manual-tab"
+            >
+                <div class="input-row">
+                    <div class="input-field">
+                        <label for="day">Day</label>
+                        <input 
+                            type="number" 
+                            id="day" 
+                            min="1" 
+                            max="31" 
+                            placeholder="DD" 
+                            title="Enter day (1-31)" 
+                            aria-label="Day of birth"
+                            aria-describedby="date-format-hint"
+                            inputmode="numeric" 
+                            autocomplete="bday-day"
+                        >
+                    </div>
+                    <div class="input-field">
+                        <label for="month">Month</label>
+                        <input 
+                            type="number" 
+                            id="month" 
+                            min="1" 
+                            max="12" 
+                            placeholder="MM" 
+                            title="Enter month (1-12)" 
+                            aria-label="Month of birth"
+                            aria-describedby="date-format-hint"
+                            inputmode="numeric" 
+                            autocomplete="bday-month"
+                        >
+                    </div>
+                    <div class="input-field">
+                        <label for="year">Year</label>
+                        <input 
+                            type="number" 
+                            id="year" 
+                            min="1900" 
+                            max="2025" 
+                            placeholder="YYYY" 
+                            title="Enter year (1900-2025)" 
+                            aria-label="Year of birth"
+                            aria-describedby="date-format-hint"
+                            inputmode="numeric" 
+                            autocomplete="bday-year"
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <!-- Date Picker Input Method -->
+            <div 
+                class="input-method" 
+                id="picker-input"
+                role="tabpanel"
+                aria-labelledby="picker-tab"
+            >
+                <div class="input-field full-width">
+                    <label for="birthdate">Date of Birth</label>
+                    <input 
+                        type="date" 
+                        id="birthdate" 
+                        max="2025-12-31" 
+                        title="Select your birth date" 
+                        aria-label="Select your date of birth"
+                        autocomplete="bday"
+                    >
+                </div>
+            </div>
+        </section>
+
+        <!-- Error Message -->
+        <div 
+            class="error" 
+            id="error-message" 
+            aria-live="assertive" 
+            role="alert" 
+            tabindex="-1"
+        ></div>
+
+        <!-- Calculate Button -->
+        <button 
+            class="calculate-btn" 
+            onclick="calculateAge()" 
+            title="Calculate your exact age"
+            aria-label="Calculate your age based on the entered birth date"
+        >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+            Calculate My Age
+        </button>
+
+        <!-- Progress Indicator -->
+        <div 
+            class="progress-container" 
+            id="progress-container" 
+            aria-live="polite" 
+            aria-label="Calculation progress"
+        >
+            <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-text" id="progress-text">Calculating your age...</div>
+        </div>
+
+        <!-- Results Section -->
+        <section 
+            class="results" 
+            id="results" 
+            aria-live="polite" 
+            role="region"
+            aria-labelledby="results-title"
+            tabindex="-1"
+        >
+            <h2 id="results-title" class="sr-only">Your Age Results</h2>
+            
+            <!-- Age Display -->
+            <div class="age-display" role="group" aria-label="Your calculated age">
+                <div class="age-unit" role="group" aria-label="Years lived">
+                    <span class="age-number" id="years" aria-label="Number of years">0</span>
+                    <div class="age-label">Years</div>
+                </div>
+                <div class="age-unit" role="group" aria-label="Months lived">
+                    <span class="age-number" id="months" aria-label="Number of months">0</span>
+                    <div class="age-label">Months</div>
+                </div>
+                <div class="age-unit" role="group" aria-label="Days lived">
+                    <span class="age-number" id="days" aria-label="Number of days">0</span>
+                    <div class="age-label">Days</div>
+                </div>
+            </div>
+
+            <!-- Share Section -->
+            <div class="share-section">
+                <button 
+                    class="share-btn" 
+                    onclick="shareResults()" 
+                    title="Share your age calculation"
+                    aria-label="Share your calculated age with others"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                        <polyline points="16,6 12,2 8,6"/>
+                        <line x1="12" y1="2" x2="12" y2="15"/>
+                    </svg>
+                    Share My Age
+                </button>
+            </div>
+
+            <!-- Statistics Grid -->
+            <div 
+                class="stats-grid" 
+                id="stats-grid"
+                role="group"
+                aria-labelledby="stats-title"
+            >
+                <h3 id="stats-title" class="sr-only">Detailed Statistics</h3>
+                <!-- Stats will be populated by JavaScript -->
+            </div>
+
+            <!-- Fun Facts Section -->
+            <div 
+                class="fun-facts" 
+                id="fun-facts"
+                role="group"
+                aria-labelledby="fun-facts-title"
+            >
+                <!-- Fun facts will be populated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p>
+                &copy; 2025 Age Calculator &mdash; 
+                <span style="font-weight: 500;">Built by Elizabeth Stein</span>
+            </p>
+        </footer>
+    </main>
+
+    <!-- Screen Reader Only Styles -->
+    <style>
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+    </style>
+
+</body>
+</html>
