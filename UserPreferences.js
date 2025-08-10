@@ -1,5 +1,5 @@
 // User preferences and settings manager
-export class UserPreferences {
+class UserPreferences {
   constructor() {
     this.preferences = this.loadPreferences();
     this.initializePreferences();

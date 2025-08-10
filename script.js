@@ -39,10 +39,77 @@ class AgeCalculatorApp {
     // Setup enhanced validation
     this.setupEnhancedValidation();
     
+    // Enhanced toggle group interaction
+    this.setupEnhancedToggleGroup();
+    
     // Listen for preference changes
     window.addEventListener('preferencesChanged', (e) => {
       this.onPreferencesChanged(e.detail);
     });
+  }
+
+  setupEnhancedToggleGroup() {
+    const toggleGroup = document.querySelector('.toggle-group');
+    const toggleButtons = document.querySelectorAll('.toggle-btn');
+    
+    if (toggleGroup && toggleButtons.length > 0) {
+      // Add data attribute for CSS animation
+      toggleGroup.setAttribute('data-active', '1');
+      
+      toggleButtons.forEach((btn, index) => {
+        btn.addEventListener('click', () => {
+          // Update active state for CSS animation
+          toggleGroup.setAttribute('data-active', (index + 1).toString());
+          
+          // Add ripple effect
+          this.createRippleEffect(btn);
+        });
+      });
+    }
+  }
+
+  createRippleEffect(element) {
+    const ripple = document.createElement('span');
+    const rect = element.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    
+    ripple.style.width = ripple.style.height = size + 'px';
+    ripple.style.left = (rect.width / 2 - size / 2) + 'px';
+    ripple.style.top = (rect.height / 2 - size / 2) + 'px';
+    ripple.classList.add('ripple');
+    
+    // Add ripple styles
+    ripple.style.position = 'absolute';
+    ripple.style.borderRadius = '50%';
+    ripple.style.background = 'rgba(255, 255, 255, 0.3)';
+    ripple.style.transform = 'scale(0)';
+    ripple.style.animation = 'ripple 0.6s linear';
+    ripple.style.pointerEvents = 'none';
+    
+    // Add ripple animation keyframes to document if not exists
+    if (!document.querySelector('#ripple-styles')) {
+      const style = document.createElement('style');
+      style.id = 'ripple-styles';
+      style.textContent = `
+        @keyframes ripple {
+          to {
+            transform: scale(2);
+            opacity: 0;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    
+    element.style.position = 'relative';
+    element.style.overflow = 'hidden';
+    element.appendChild(ripple);
+    
+    setTimeout(() => {
+      if (ripple.parentNode) {
+        ripple.remove();
+      }
+    }, 600);
   }
 
   setupEnhancedValidation() {
